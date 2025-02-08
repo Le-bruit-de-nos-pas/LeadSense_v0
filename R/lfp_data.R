@@ -84,18 +84,30 @@ lfp_data <- function(dataset = NULL) {
   }
 
   # Compute band power for each electrode
-  band_power_results <- structured_lfp_dataset %>%
-    dplyr::group_by(SensingElectrodes) %>%
-    dplyr::summarize(across(c(LFPFrequency, LFPMagnitude), list), .groups = "drop") %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(BandPower = list(calculate_band_power(LFPFrequency, LFPMagnitude, frequency_bands))) %>%
-    tidyr::unnest(BandPower) %>%
-    dplyr::mutate(Band = rep(names(frequency_bands), each = nrow(.) / length(frequency_bands)))
+  band_power_results <- data.frame()
 
-  message("Band power results computed.")
+  unique_electrodes <- unique(structured_lfp_dataset$SensingElectrodes)
+
+  for (electrode in unique_electrodes) {
+    electrode_dataset <- structured_lfp_dataset %>% filter(SensingElectrodes == electrode)
+
+    # Ensure the dataset exists for processing
+    if (nrow(electrode_dataset) > 0) {
+      band_powers <- calculate_band_power(electrode_dataset$LFPFrequency, electrode_dataset$LFPMagnitude, frequency_bands)
+
+      band_power_results <- rbind(band_power_results, data.frame(
+        SensingElectrodes = electrode,
+        Band = names(band_powers),
+        Power = band_powers
+      ))
+    }
+  }
+
+  # Check the results to make sure it's correct
+  print(band_power_results)
 
   # Visualize band power distribution
-  p1 <- ggplot2::ggplot(band_power_results, ggplot2::aes(x = Band, y = BandPower, fill = Band)) +
+  p1 <- ggplot2::ggplot(band_power_results, ggplot2::aes(x = Band, y = Power, fill = Band)) +
     ggplot2::geom_bar(stat = "identity", color = "black") +
     ggplot2::facet_wrap(~SensingElectrodes) +
     ggplot2::labs(title = "Frequency Band Power Distribution per Electrode",
@@ -105,7 +117,9 @@ lfp_data <- function(dataset = NULL) {
     ggplot2::scale_fill_manual(values = c("deepskyblue4", "deeppink4", "bisque3", "darkslategray", "cadetblue4")) +
     ggpubr::theme_pubr()
 
+  # Print the plot
   print(p1)
+
 
   # Loop through each unique electrode type and plot the LFP Frequency vs Magnitude
   unique_electrodes <- unique(structured_lfp_dataset$SensingElectrodes)

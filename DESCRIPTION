@@ -3,7 +3,7 @@ Title: Medtronic Brain Sense Local Field Potencial Analysis
 Version: 0.0.0.9000
 Authors@R: 
     person("Paulo", "Bastos", , "pauloandrediasbastos01@gmail.com", role = c("aut", "cre"))
-Description: This package extracts and creates an analysis pipeline for the JSON data files from Brain Sense sessions using Medtronic's Deep Brain Stimulation surgery electrode implants. 
+Description: Extracts and creates an analysis pipeline for the JSON data files from Brain Sense sessions using Medtronic's Deep Brain Stimulation surgery electrode implants. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

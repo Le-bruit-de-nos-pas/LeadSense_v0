@@ -1,3 +1,8 @@
+# Declare global variables to avoid CRAN NOTE
+utils::globalVariables(c("Hemisphere", "Type", "ResultValue",
+                         "SensingElectrodes", "LFPFrequency",
+                         "LFPMagnitude", "BandPower"))
+
 #' Extract and summarize Impedance data if available
 #'
 #' This function extracts impedance data from a JSON-like dataset and computes summary statistics.
@@ -26,14 +31,15 @@ impedance_summary <- function(dataset = NULL) {
   # Load default dataset if none is provided
   if (is.null(dataset)) {
     data("dataset", package = "LeadSense", envir = environment())
+    dataset <- get("dataset", envir = environment())
   }
 
-  if (!exists("dataset")) {
+  if (!exists("dataset") || is.null(dataset)) {
     stop("No dataset provided, and default dataset could not be loaded.")
   }
 
-  # Step 1: Check if Impedance dataset exists
-  if (!is.null(dataset$Impedance) && !is.null(dataset$Impedance$Hemisphere)) {
+  # Check if Impedance dataset exists
+  if (!is.null(dataset$Impedance) && is.list(dataset$Impedance$Hemisphere)) {
 
     impedance_dataset <- dataset$Impedance$Hemisphere  # Full list
 
@@ -61,21 +67,21 @@ impedance_summary <- function(dataset = NULL) {
       return(rbind(monopolar, bipolar))
     }
 
-    # Step 2: Extract Left and Right Hemisphere dataset
-    left_dataset <- impedance_dataset[sapply(impedance_dataset, function(x) x$Hemisphere == "HemisphereLocationDef.Left")]
-    right_dataset <- impedance_dataset[sapply(impedance_dataset, function(x) x$Hemisphere == "HemisphereLocationDef.Right")]
+    # Extract Left and Right Hemisphere dataset
+    left_dataset <- Filter(function(x) x$Hemisphere == "HemisphereLocationDef.Left", impedance_dataset)
+    right_dataset <- Filter(function(x) x$Hemisphere == "HemisphereLocationDef.Right", impedance_dataset)
 
     # Apply function (only if dataset exists)
     left_impedance <- if (length(left_dataset) > 0) extract_impedance(left_dataset[[1]], "Left") else NULL
     right_impedance <- if (length(right_dataset) > 0) extract_impedance(right_dataset[[1]], "Right") else NULL
 
-    # Step 3: Combine left and right hemisphere dataset
-    combined_impedance_df <- rbind(left_impedance, right_impedance)
+    # Combine left and right hemisphere dataset
+    combined_impedance_df <- do.call(rbind, Filter(Negate(is.null), list(left_impedance, right_impedance)))
 
     # If we have a combined impedance dataset
-    if (!is.null(combined_impedance_df)) {
+    if (!is.null(combined_impedance_df) && nrow(combined_impedance_df) > 0) {
 
-      # Step 4: Summarize Impedance by Hemisphere and Type
+      # Summarize Impedance by Hemisphere and Type
       impedance_summary <- combined_impedance_df %>%
         dplyr::group_by(Hemisphere, Type) %>%
         dplyr::summarize(MeanImpedance = mean(ResultValue, na.rm = TRUE), .groups = "drop")
@@ -94,7 +100,3 @@ impedance_summary <- function(dataset = NULL) {
     message("Impedance dataset is missing for this patient.")
   }
 }
-
-# Example Usage
-# impedance_results <- impedance_summary(dataset)
-# print(impedance_results$impedance_summary)

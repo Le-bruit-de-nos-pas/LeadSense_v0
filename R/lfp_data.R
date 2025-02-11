@@ -1,3 +1,7 @@
+
+# Declare global variables to avoid CRAN NOTE
+utils::globalVariables(c("Band", "Power"))
+
 #' Extract and summarize LFP data
 #'
 #' This function extracts and summarizes LFP (Local Field Potential) data from a JSON-like dataset.
@@ -104,7 +108,7 @@ lfp_data <- function(dataset = NULL) {
   }
 
   # Check the results to make sure it's correct
-  print(band_power_results)
+  message("Returning band_power_results dataset.")
 
   # Visualize band power distribution
   p1 <- ggplot2::ggplot(band_power_results, ggplot2::aes(x = Band, y = Power, fill = Band)) +
@@ -150,5 +154,10 @@ lfp_data <- function(dataset = NULL) {
   }
 
   message("Returning structured LFP dataset.")
-  return(structured_lfp_dataset)
+
+  return(list(
+  band_power_results = band_power_results,
+  structured_lfp_dataset = structured_lfp_dataset
+  ))
+
 }

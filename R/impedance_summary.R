@@ -22,10 +22,10 @@ utils::globalVariables(c("Hemisphere", "Type", "ResultValue",
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' impedance_results <- impedance_summary(dataset)
 #' print(impedance_results$impedance_summary)
-#' }
+#' print(impedance_results$combined_impedance_df)
+
 impedance_summary <- function(dataset = NULL) {
 
   # Load default dataset if none is provided

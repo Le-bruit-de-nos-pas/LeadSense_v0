@@ -21,8 +21,7 @@ If no valid impedance data is found, a message is printed instead.
 This function extracts impedance data from a JSON-like dataset and computes summary statistics.
 }
 \examples{
-\dontrun{
 impedance_results <- impedance_summary(dataset)
 print(impedance_results$impedance_summary)
-}
+print(impedance_results$combined_impedance_df)
 }

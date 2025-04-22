@@ -21,8 +21,7 @@ A structured LFP dataset including:
 This function extracts and summarizes LFP (Local Field Potential) data from a JSON-like dataset.
 }
 \examples{
-\dontrun{
 lfp_dataset <- lfp_data(dataset)
-head(lfp_dataset)
-}
+print(lfp_dataset$band_power_results)
+print(lfp_dataset$structured_lfp_dataset)
 }
